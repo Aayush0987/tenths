@@ -5,6 +5,13 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import TyreStrategyChart from "@/components/charts/TyreStrategyChart";
 import DegradationChart from "@/components/charts/DegradationChart";
 import GapToLeaderChart from "@/components/charts/GapToLeaderChart";
+import ConsistencyChart from "@/components/charts/ConsistencyChart";
+import PositionChart from "@/components/charts/PositionChart";
+import SectorChart from "@/components/charts/SectorChart";
+import SpeedTrapChart from "@/components/charts/SpeedTrapChart";
+import RaceControlTimeline from "@/components/charts/RaceControlTimeline";
+import WeatherChart from "@/components/charts/WeatherChart";
+import QualifyingGapChart from "@/components/charts/QualifyingGapChart";
 
 /**
  * Finishing order.
@@ -102,6 +109,26 @@ export default async function RacePage({
       {race.laps.length > 0 && race.stints.length > 0 && (
         <DegradationChart laps={race.laps} stints={race.stints} />
       )}
+
+      {race.laps.length > 0 && race.stints.length > 0 && (
+        <ConsistencyChart laps={race.laps} stints={race.stints} />
+      )}
+
+      {race.laps.length > 0 && (
+        <PositionChart laps={race.laps} drivers={race.drivers} totalLaps={race.totalLaps} driverOrder={order} />
+      )}
+
+      {race.sectors.length > 0 && <SectorChart sectors={race.sectors} />}
+
+      {race.sectors.length > 0 && <SpeedTrapChart sectors={race.sectors} />}
+
+      {race.raceControl.length > 0 && (
+        <RaceControlTimeline messages={race.raceControl} totalLaps={race.totalLaps} />
+      )}
+
+      {race.weather.length > 0 && <WeatherChart weather={race.weather} />}
+
+      {race.qualifying.length > 0 && <QualifyingGapChart qualifying={race.qualifying} />}
     </div>
   );
 }
