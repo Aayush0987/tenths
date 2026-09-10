@@ -36,6 +36,13 @@
   --accent: #38bdf8;
   --on-accent: #04141d;
 
+  /* Accent at low alpha, for banding a cell without turning it into a block
+     of colour. Text on these stays var(--ink): the wash sits close enough to
+     the surface that the body contrast ratio is unchanged, which is the point
+     — it groups cells without competing with the number printed in them. */
+  --accent-wash: rgba(56, 189, 248, 0.13);
+  --accent-wash-strong: rgba(56, 189, 248, 0.28);
+
   --scrim: rgba(0, 0, 0, 0.72);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
@@ -115,6 +122,8 @@
     --ink-faint: #8a929d;
     --accent: #0369a1;
     --on-accent: #ffffff;
+    --accent-wash: rgba(3, 105, 161, 0.10);
+    --accent-wash-strong: rgba(3, 105, 161, 0.22);
     --scrim: rgba(11, 13, 16, 0.6);
     --shadow-md: 0 4px 20px rgba(11, 13, 16, 0.1);
     --shadow-lg: 0 12px 40px rgba(11, 13, 16, 0.18);
@@ -144,6 +153,8 @@
   --ink-faint: #8a929d;
   --accent: #0369a1;
   --on-accent: #ffffff;
+  --accent-wash: rgba(3, 105, 161, 0.10);
+  --accent-wash-strong: rgba(3, 105, 161, 0.22);
   --scrim: rgba(11, 13, 16, 0.6);
   --shadow-md: 0 4px 20px rgba(11, 13, 16, 0.1);
   --shadow-lg: 0 12px 40px rgba(11, 13, 16, 0.18);

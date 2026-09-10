@@ -80,6 +80,26 @@ export interface WeatherSample {
   rain: boolean | null;
 }
 
+export interface RaceResult {
+  driver: string;
+  /**
+   * Classified finishing position, or null for anyone the stewards did not
+   * classify. Derived from ClassifiedPosition, never from the status text —
+   * see build_results in scripts/extract.py.
+   */
+  position: number | null;
+  /** Raw classification: a number, or "R" retired, "D" disqualified, etc. */
+  classified: string | null;
+  /** 0 means a pit lane start, which is not the same as starting last. */
+  grid: number | null;
+  status: string | null;
+  points: number | null;
+  sprintPoints: number | null;
+  /** Gap to the winner. Null for anyone not on the lead lap — the feed's
+   *  figure for a lapped car is measured to the car ahead, not the winner. */
+  gapSeconds: number | null;
+}
+
 export interface RaceData {
   v: number;
   season: number;
@@ -87,6 +107,14 @@ export interface RaceData {
   raceName: string;
   location: string;
   country: string;
+  /**
+   * Stable circuit key from the results feed. The race name moves with its
+   * sponsor and the location string moves too — the same Miami track is
+   * "Miami" in 2024 and "Miami Gardens" after — so this is what a circuit is
+   * grouped by. Null only for a file written before the pipeline carried it.
+   */
+  circuitId: string | null;
+  circuitName: string | null;
   date: string | null;
   totalLaps: number;
   drivers: Driver[];
@@ -95,6 +123,9 @@ export interface RaceData {
   pitStops: PitStop[];
   sectors: SectorBests[];
   qualifying: QualifyingResult[];
+  results: RaceResult[];
+  /** Winner's total race time, seconds. */
+  winnerSeconds: number | null;
   raceControl: RaceControlMessage[];
   weather: WeatherSample[];
   generatedAt: string;
@@ -152,6 +183,7 @@ export interface SeasonIndex {
     raceName: string;
     location: string;
     country: string;
+    circuitId: string | null;
     date: string | null;
     totalLaps: number;
     hasTelemetry: boolean;

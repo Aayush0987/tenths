@@ -34,10 +34,11 @@ export default function Header() {
 
       <nav className="flex items-center gap-4" aria-label="Main">
         {[
-          { href: "/2026", label: "SEASON" },
+          { href: "/2026", label: "2026" },
+          { href: "/2025", label: "2025" },
+          { href: "/2024", label: "2024" },
           { href: "/drivers", label: "DRIVERS" },
           { href: "/circuits", label: "CIRCUITS" },
-          { href: "/compare", label: "COMPARE" },
         ].map(({ href, label }) => (
           <Link key={href} href={href} className="label" style={{ textDecoration: "none" }}>
             {label}
@@ -47,7 +48,7 @@ export default function Header() {
 
       <div className="ml-auto flex items-center gap-3">
         <span className="label" style={{ color: "var(--ink-faint)" }}>
-          2018–2026
+          2024–2026
         </span>
         <ThemeToggle />
       </div>

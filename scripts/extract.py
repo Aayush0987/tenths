@@ -198,3 +198,108 @@ def build_qualifying(session):
         ])
     rows.sort(key=lambda r: (r[1] is None, r[1] or 0))
     return schema, rows
+
+
+def build_results(session, sprint_points=None):
+    """
+    Final classification.
+
+    Position comes from ClassifiedPosition rather than from Status. Status is
+    free text from the results feed and its vocabulary is not stable —
+    JOLPICA reports a lapped finisher as "Lapped" where Ergast said "+1 Lap",
+    and code that pattern-matches those strings to decide who finished drops a
+    third of the field the day the wording changes. ClassifiedPosition is a
+    number for everyone the stewards classified and a letter otherwise ("R"
+    retired, "D" disqualified, "E" excluded, "W" withdrawn, "F" failed to
+    qualify, "N" not classified), which is the distinction actually wanted.
+    Status is kept alongside because "Collision" and "Gearbox" are worth
+    showing, not because anything branches on it.
+
+    gapSeconds is only populated for drivers on the lead lap. The feed's Time
+    column holds the winner's total race time in P1 and a gap below it, but
+    for a lapped driver that gap is measured to the car ahead on their own
+    lap, not to the winner — Bahrain 2024 lists P11 at 6.759s, which as a
+    race gap is meaningless. Left null rather than shown wrong.
+    """
+    schema = ["driver", "position", "classified", "grid", "status",
+              "points", "sprintPoints", "gapSeconds"]
+
+    winner_seconds = None
+    rows = []
+    for _, r in session.results.iterrows():
+        classified = str(r.get("ClassifiedPosition") or "").strip()
+        position = int(classified) if classified.isdigit() else None
+
+        time = r.get("Time")
+        seconds = None
+        if time is not None and not pd.isna(time):
+            seconds = time.total_seconds()
+        if position == 1:
+            winner_seconds = seconds
+
+        status = str(r.get("Status") or "").strip()
+        gap = 0.0 if position == 1 else (
+            seconds if (seconds is not None and status == "Finished") else None
+        )
+
+        grid = r.get("GridPosition")
+        points = r.get("Points")
+        code = str(r.get("Abbreviation") or "")
+
+        rows.append([
+            code,
+            position,
+            classified or None,
+            # A pit lane start is recorded as grid 0; kept as 0 rather than
+            # normalised to last, because they are different things.
+            int(grid) if grid is not None and not pd.isna(grid) else None,
+            status or None,
+            rounded(points, 2) if points is not None and not pd.isna(points) else None,
+            rounded((sprint_points or {}).get(code), 2),
+            rounded(gap, 3),
+        ])
+
+    rows.sort(key=lambda r: (r[1] is None, r[1] or 0))
+    return schema, rows, rounded(winner_seconds, 3)
+
+
+def build_sprint_points(session):
+    """Driver code -> sprint points, for the championship running total."""
+    points = {}
+    for _, r in session.results.iterrows():
+        p = r.get("Points")
+        if p is not None and not pd.isna(p):
+            points[str(r.get("Abbreviation") or "")] = float(p)
+    return points
+
+
+def fetch_circuit_index(season: int) -> dict:
+    """
+    Round -> stable circuit identity, from the results feed's schedule.
+
+    The name a race runs under changes with its sponsor, and FastF1's Location
+    string is not stable either: the same Miami track is "Miami" in 2024 and
+    "Miami Gardens" from 2025, and Monaco is "Monaco" until 2026 and "Monte
+    Carlo" after. Keying a circuit page on either one splits a track into two
+    and destroys the season-to-season comparison the page exists for. The feed
+    carries a circuitId that does not move ("miami", "monaco"), so that is the
+    key, and it costs one request per season.
+    """
+    import json
+    import urllib.request
+
+    url = f"https://api.jolpi.ca/ergast/f1/{season}/races.json?limit=100"
+    with urllib.request.urlopen(url, timeout=30) as response:
+        races = json.load(response)["MRData"]["RaceTable"]["Races"]
+
+    index = {}
+    for race in races:
+        circuit = race.get("Circuit") or {}
+        location = circuit.get("Location") or {}
+        index[int(race["round"])] = {
+            "circuitId": circuit.get("circuitId"),
+            "circuitName": circuit.get("circuitName"),
+            "locality": location.get("locality"),
+            "circuitCountry": location.get("country"),
+        }
+    return index

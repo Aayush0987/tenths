@@ -46,6 +46,23 @@ def log(msg: str) -> None:
     print(msg, flush=True)
 
 
+def use_jolpica() -> None:
+    """
+    Point FastF1's results lookup at JOLPICA.
+
+    FastF1 3.4.4 reads final classification from ergast.com, which has been
+    retired: the request fails and every result column comes back NaN, with
+    only a warning in the log. JOLPICA is the maintained continuation of the
+    same API and speaks the same responses, so redirecting the base URL is
+    enough — no parsing of our own, and session.results populates as FastF1
+    intends. Kept here rather than in extract so there is one place to change
+    when FastF1 ships its own switch.
+    """
+    import fastf1.ergast.interface as ergast
+
+    ergast.BASE_URL = "https://api.jolpi.ca/ergast/f1"
+
+
 def load_race(season: int, round_no: int, attempts: int = 3):
     """
     Load a race session, retrying transient failures.
@@ -109,6 +126,26 @@ def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[
     rc_schema, rc = extract.build_race_control(race)
     weather_schema, weather = extract.build_weather(race)
 
+    # Sprint points count toward the championship, so a progression built
+    # from race points alone is wrong by up to eight points a driver on the
+    # six sprint weekends a season. Rounds without a sprint raise, which is
+    # the normal case rather than a failure.
+    sprint_points = {}
+    try:
+        sprint = fastf1.get_session(season, round_no, "S")
+        sprint.load(laps=False, telemetry=False, weather=False, messages=False)
+        sprint_points = extract.build_sprint_points(sprint)
+        if sprint_points:
+            log(f"    sprint: {len(sprint_points)} scorers")
+    except ValueError:
+        pass
+    except Exception as err:
+        log(f"    sprint unavailable: {err}")
+
+    results_schema, results, winner_seconds = extract.build_results(race, sprint_points)
+    if not any(r[1] is not None for r in results):
+        log("    WARNING: no classified positions — results feed unavailable")
+
     quali_schema, quali = ["driver", "position", "q1", "q2", "q3"], []
     quali_session = None
     try:
@@ -122,6 +159,15 @@ def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[
     except Exception as err:
         log(f"    qualifying unavailable: {err}")
 
+    # Stable circuit identity, so the circuit page can group seasons. Failing
+    # here must not lose a race: the file is still correct without it, and
+    # backfill_circuits.py can fill it in later.
+    circuit = {}
+    try:
+        circuit = extract.fetch_circuit_index(season).get(round_no, {})
+    except Exception as err:
+        log(f"    circuit index unavailable: {err}")
+
     race_payload = {
         "v": FORMAT_VERSION,
         "season": season,
@@ -129,12 +175,16 @@ def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[
         "raceName": str(event.get("EventName") or ""),
         "location": str(event.get("Location") or ""),
         "country": str(event.get("Country") or ""),
+        "circuitId": circuit.get("circuitId"),
+        "circuitName": circuit.get("circuitName"),
+        "locality": circuit.get("locality"),
         "date": str(event.get("EventDate"))[:10] if event.get("EventDate") is not None else None,
         "totalLaps": int(laps["LapNumber"].max()),
         "schema": {
             "drivers": driver_schema, "laps": lap_schema, "stints": stint_schema,
             "pitStops": pit_schema, "sectors": sector_schema,
             "raceControl": rc_schema, "weather": weather_schema, "qualifying": quali_schema,
+            "results": results_schema,
         },
         "drivers": drivers,
         "laps": lap_rows,
@@ -144,6 +194,8 @@ def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[
         "raceControl": rc,
         "weather": weather,
         "qualifying": quali,
+        "results": results,
+        "winnerSeconds": winner_seconds,
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source": f"FastF1 {fastf1.__version__}",
     }
@@ -189,6 +241,7 @@ def write_index(season: int) -> None:
                 "raceName": d.get("raceName"),
                 "location": d.get("location"),
                 "country": d.get("country"),
+                "circuitId": d.get("circuitId"),
                 "date": d.get("date"),
                 "totalLaps": d.get("totalLaps"),
                 "hasTelemetry": (season_dir / f"{d.get('round')}.tel.json.gz").exists(),
@@ -265,6 +318,7 @@ def main() -> int:
 
     CACHE.mkdir(parents=True, exist_ok=True)
     fastf1.Cache.enable_cache(str(CACHE))
+    use_jolpica()
 
     seasons = args.seasons or [args.season]
     rounds = [args.round] if args.round else None

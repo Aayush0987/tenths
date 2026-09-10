@@ -8,7 +8,7 @@ import { cache } from "react";
 
 import type {
   Compound, Driver, Lap, PitStop, QualifyingResult, RaceControlMessage,
-  RaceData, SeasonIndex, SectorBests, Stint, TelemetryData, WeatherSample,
+  RaceData, RaceResult, SeasonIndex, SectorBests, Stint, TelemetryData, WeatherSample,
 } from "@/types/data";
 import { boolOrNull, decodeTable, num, numOrNull, str, strOrNull } from "@/lib/data/decode";
 
@@ -58,6 +58,8 @@ export const getRace = cache(async function getRace(
     raceName: str(raw.raceName),
     location: str(raw.location),
     country: str(raw.country),
+    circuitId: strOrNull(raw.circuitId),
+    circuitName: strOrNull(raw.circuitName),
     date: strOrNull(raw.date),
     totalLaps: num(raw.totalLaps),
     generatedAt: str(raw.generatedAt),
@@ -102,6 +104,16 @@ export const getRace = cache(async function getRace(
         driver: str(g("driver")), position: numOrNull(g("position")),
         q1: strOrNull(g("q1")), q2: strOrNull(g("q2")), q3: strOrNull(g("q3")),
       })),
+
+    results: decodeTable<RaceResult>("results",
+      ["driver", "position", "classified", "grid", "status", "points", "sprintPoints", "gapSeconds"],
+      schema, raw.results as never, (g) => ({
+        driver: str(g("driver")), position: numOrNull(g("position")),
+        classified: strOrNull(g("classified")), grid: numOrNull(g("grid")),
+        status: strOrNull(g("status")), points: numOrNull(g("points")),
+        sprintPoints: numOrNull(g("sprintPoints")), gapSeconds: numOrNull(g("gapSeconds")),
+      })),
+    winnerSeconds: numOrNull(raw.winnerSeconds),
 
     raceControl: decodeTable<RaceControlMessage>("raceControl", ["lap", "category", "flag", "scope", "message"],
       schema, raw.raceControl as never, (g) => ({
