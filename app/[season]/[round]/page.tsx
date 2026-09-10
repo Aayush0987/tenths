@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRace, getSeasonIndex, getTelemetry } from "@/lib/data/read";
+import type { RaceData } from "@/types/data";
 import SectionHeading from "@/components/ui/SectionHeading";
 import TyreStrategyChart from "@/components/charts/TyreStrategyChart";
 import DegradationChart from "@/components/charts/DegradationChart";
@@ -12,19 +13,41 @@ import SpeedTrapChart from "@/components/charts/SpeedTrapChart";
 import RaceControlTimeline from "@/components/charts/RaceControlTimeline";
 import WeatherChart from "@/components/charts/WeatherChart";
 import QualifyingGapChart from "@/components/charts/QualifyingGapChart";
+import RaceReplay from "@/components/charts/RaceReplay";
+import StartChart from "@/components/charts/StartChart";
+import CutlineChart from "@/components/charts/CutlineChart";
+import { buildReplay } from "@/lib/analysis/replay";
+import { startPerformance } from "@/lib/analysis/start";
+import { buildCutline } from "@/lib/analysis/cutline";
+import { circuitGeometry } from "@/lib/analysis/circuit";
 
 /**
  * Finishing order.
  *
- * The data has no classification table — FastF1 sources that from Ergast,
- * which returns nothing for recent seasons. It is recovered from the final
- * recorded position of each driver instead, which matches the classification
- * for anyone who saw the flag and puts retirements at the back in the order
- * they stopped.
+ * Taken from the classification the results feed publishes, which is
+ * authoritative. It used to be reconstructed from each driver's last recorded
+ * lap position, because FastF1 sourced results from Ergast and Ergast returned
+ * nothing — that reconstruction agreed with the classification for anyone who
+ * saw the flag but had to guess at the order of retirements. The pipeline now
+ * carries real results, so the guess is gone.
+ *
+ * The old reconstruction is kept as a fallback for any file written before
+ * results were exported.
  */
-function finishingOrder(laps: { driver: string; lap: number; position: number | null }[]): string[] {
+function finishingOrder(race: RaceData): string[] {
+  if (race.results.length > 0) {
+    return [...race.results]
+      .sort((a, b) => {
+        if (a.position === null && b.position === null) return 0;
+        if (a.position === null) return 1;
+        if (b.position === null) return -1;
+        return a.position - b.position;
+      })
+      .map((r) => r.driver);
+  }
+
   const last = new Map<string, { lap: number; position: number }>();
-  for (const l of laps) {
+  for (const l of race.laps) {
     if (l.position === null) continue;
     const prev = last.get(l.driver);
     if (!prev || l.lap > prev.lap) last.set(l.driver, { lap: l.lap, position: l.position });
@@ -55,11 +78,22 @@ export default async function RacePage({
   ]);
   if (!race) notFound();
 
-  const order = finishingOrder(race.laps);
+  const order = finishingOrder(race);
   const rounds = index?.races.map((r) => r.round) ?? [];
   const at = rounds.indexOf(race.round);
   const prev = at > 0 ? rounds[at - 1] : null;
   const next = at >= 0 && at < rounds.length - 1 ? rounds[at + 1] : null;
+
+  const replay = race.laps.length > 0 ? buildReplay(race) : null;
+
+  // Only the outline and its extent cross to the client; the braking split the
+  // circuit page uses would be a duplicate of the same points.
+  const full = telemetry ? circuitGeometry(telemetry) : null;
+  const track = full
+    ? { points: full.points.map((p) => ({ x: p.x, y: p.y })), bounds: full.bounds }
+    : null;
+  const starts = race.results.length > 0 ? startPerformance(race) : [];
+  const cutline = race.qualifying.length > 0 ? buildCutline(race) : [];
 
   const facts: [string, string][] = [
     ["LAPS", String(race.totalLaps)],
@@ -103,6 +137,17 @@ export default async function RacePage({
         ))}
       </dl>
 
+      {replay && (
+        <RaceReplay
+          wire={replay}
+          drivers={race.drivers}
+          track={track}
+          raceName={race.raceName}
+        />
+      )}
+
+      {starts.length > 0 && <StartChart rows={starts} />}
+
       {race.stints.length > 0 && (
         <TyreStrategyChart stints={race.stints} totalLaps={race.totalLaps} driverOrder={order} />
       )}
@@ -132,6 +177,8 @@ export default async function RacePage({
       )}
 
       {race.weather.length > 0 && <WeatherChart weather={race.weather} />}
+
+      {cutline.length > 0 && <CutlineChart segments={cutline} />}
 
       {race.qualifying.length > 0 && <QualifyingGapChart qualifying={race.qualifying} />}
     </div>
