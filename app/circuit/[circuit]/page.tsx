@@ -2,11 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import CircuitHistoryChart, { type CircuitYear } from "@/components/charts/CircuitHistoryChart";
+import CircuitMap from "@/components/charts/CircuitMap";
+import CircuitFacts from "@/components/circuit/CircuitFacts";
+import CircuitRecords from "@/components/circuit/CircuitRecords";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { getCircuitRaces, getCircuits } from "@/lib/data/aggregate";
+import { getTelemetry } from "@/lib/data/read";
 import { cleanLapsFor } from "@/lib/analysis/selectors";
 import { formatLap } from "@/lib/format";
 import { bestQualifyingSeconds } from "@/lib/analysis/championship";
+import {
+  circuitCharacter, circuitGeometry, circuitPointsLeaders, circuitRecords,
+} from "@/lib/analysis/circuit";
 
 export async function generateStaticParams() {
   const circuits = await getCircuits();
@@ -25,6 +32,26 @@ export default async function CircuitPage({
   if (races.length === 0) notFound();
 
   const latest = races[races.length - 1];
+
+  // The diagram comes from whichever running of this circuit has telemetry,
+  // most recent first. 2026 publishes none, so a circuit on the current
+  // calendar is drawn from its last season that did — the tarmac is the same.
+  let geometry = null;
+  let character = null;
+  let mapSeason: number | null = null;
+  for (const race of [...races].reverse()) {
+    const telemetry = await getTelemetry(race.season, race.round);
+    if (!telemetry) continue;
+    const g = circuitGeometry(telemetry);
+    if (!g) continue;
+    geometry = g;
+    character = circuitCharacter(telemetry, g);
+    mapSeason = race.season;
+    break;
+  }
+
+  const records = circuitRecords(races);
+  const leaders = circuitPointsLeaders(races);
 
   const years: CircuitYear[] = races.map((race) => {
     const pole = race.qualifying.find((q) => q.position === 1);
@@ -94,6 +121,32 @@ export default async function CircuitPage({
           </>
         }
       />
+
+      {geometry && character && (
+        <section
+          className="mb-6 card grid-2up"
+          style={{ padding: "var(--space-4)", gap: "var(--space-5)", alignItems: "start" }}
+        >
+          <div>
+            <p className="label">CIRCUIT MAP</p>
+            <p
+              style={{
+                fontSize: "var(--text-small)", color: "var(--ink-muted)",
+                margin: "6px 0 10px", lineHeight: 1.5,
+              }}
+            >
+              Traced from {character.referenceDriver}&rsquo;s reference qualifying lap in{" "}
+              {mapSeason} — this is where the car actually went, not an illustration.
+              Braking is taken from the car&rsquo;s own brake trace.
+            </p>
+            <CircuitMap geometry={geometry} location={latest.location} />
+          </div>
+
+          <CircuitFacts character={character} raceLaps={latest.totalLaps} />
+        </section>
+      )}
+
+      <CircuitRecords records={records} leaders={leaders} seasons={years.map((y) => y.season)} />
 
       <CircuitHistoryChart years={years} location={latest.location} />
 

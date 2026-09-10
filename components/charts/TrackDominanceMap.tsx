@@ -23,10 +23,16 @@ interface Props {
  * JavaScript to be useful.
  */
 export default function TrackDominanceMap({ telemetry, sectors, codeA, codeB }: Props) {
-  const pts = telemetry.path.filter(
+  const raw = telemetry.path.filter(
     (p): p is { x: number; y: number; miniSector: number } => p.x !== null && p.y !== null,
   );
-  if (pts.length < 10) return null;
+  if (raw.length < 10) return null;
+
+  // The position telemetry is y-up; SVG is y-down. Without negating, the
+  // circuit renders mirrored — which for a shape people recognise is simply
+  // wrong, and disagreed with the map on the circuit page. See
+  // lib/analysis/circuit.ts, where the same convention is established.
+  const pts = raw.map((p) => ({ ...p, y: -p.y }));
 
   const xs = pts.map((p) => p.x);
   const ys = pts.map((p) => p.y);
