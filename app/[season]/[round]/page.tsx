@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getRace, getSeasonIndex, getTelemetry } from "@/lib/data/read";
 import SectionHeading from "@/components/ui/SectionHeading";
 import TyreStrategyChart from "@/components/charts/TyreStrategyChart";
+import DegradationChart from "@/components/charts/DegradationChart";
+import GapToLeaderChart from "@/components/charts/GapToLeaderChart";
 
 /**
  * Finishing order.
@@ -91,6 +93,14 @@ export default async function RacePage({
 
       {race.stints.length > 0 && (
         <TyreStrategyChart stints={race.stints} totalLaps={race.totalLaps} driverOrder={order} />
+      )}
+
+      {race.laps.length > 0 && (
+        <GapToLeaderChart laps={race.laps} drivers={race.drivers} totalLaps={race.totalLaps} />
+      )}
+
+      {race.laps.length > 0 && race.stints.length > 0 && (
+        <DegradationChart laps={race.laps} stints={race.stints} />
       )}
     </div>
   );

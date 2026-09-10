@@ -1,0 +1,222 @@
+{
+  "generatedAt": "2026-09-10T18:54:58+00:00",
+  "races": [
+    {
+      "country": "Australia",
+      "date": "2025-03-16",
+      "hasTelemetry": true,
+      "location": "Melbourne",
+      "raceName": "Australian Grand Prix",
+      "round": 1,
+      "totalLaps": 57
+    },
+    {
+      "country": "China",
+      "date": "2025-03-23",
+      "hasTelemetry": true,
+      "location": "Shanghai",
+      "raceName": "Chinese Grand Prix",
+      "round": 2,
+      "totalLaps": 56
+    },
+    {
+      "country": "Japan",
+      "date": "2025-04-06",
+      "hasTelemetry": true,
+      "location": "Suzuka",
+      "raceName": "Japanese Grand Prix",
+      "round": 3,
+      "totalLaps": 53
+    },
+    {
+      "country": "Bahrain",
+      "date": "2025-04-13",
+      "hasTelemetry": true,
+      "location": "Sakhir",
+      "raceName": "Bahrain Grand Prix",
+      "round": 4,
+      "totalLaps": 57
+    },
+    {
+      "country": "Saudi Arabia",
+      "date": "2025-04-20",
+      "hasTelemetry": true,
+      "location": "Jeddah",
+      "raceName": "Saudi Arabian Grand Prix",
+      "round": 5,
+      "totalLaps": 50
+    },
+    {
+      "country": "United States",
+      "date": "2025-05-04",
+      "hasTelemetry": true,
+      "location": "Miami Gardens",
+      "raceName": "Miami Grand Prix",
+      "round": 6,
+      "totalLaps": 57
+    },
+    {
+      "country": "Italy",
+      "date": "2025-05-18",
+      "hasTelemetry": true,
+      "location": "Imola",
+      "raceName": "Emilia Romagna Grand Prix",
+      "round": 7,
+      "totalLaps": 63
+    },
+    {
+      "country": "Monaco",
+      "date": "2025-05-25",
+      "hasTelemetry": true,
+      "location": "Monaco",
+      "raceName": "Monaco Grand Prix",
+      "round": 8,
+      "totalLaps": 78
+    },
+    {
+      "country": "Spain",
+      "date": "2025-06-01",
+      "hasTelemetry": true,
+      "location": "Barcelona",
+      "raceName": "Spanish Grand Prix",
+      "round": 9,
+      "totalLaps": 66
+    },
+    {
+      "country": "Canada",
+      "date": "2025-06-15",
+      "hasTelemetry": true,
+      "location": "Montr\u00e9al",
+      "raceName": "Canadian Grand Prix",
+      "round": 10,
+      "totalLaps": 70
+    },
+    {
+      "country": "Austria",
+      "date": "2025-06-29",
+      "hasTelemetry": true,
+      "location": "Spielberg",
+      "raceName": "Austrian Grand Prix",
+      "round": 11,
+      "totalLaps": 70
+    },
+    {
+      "country": "United Kingdom",
+      "date": "2025-07-06",
+      "hasTelemetry": true,
+      "location": "Silverstone",
+      "raceName": "British Grand Prix",
+      "round": 12,
+      "totalLaps": 52
+    },
+    {
+      "country": "Belgium",
+      "date": "2025-07-27",
+      "hasTelemetry": true,
+      "location": "Spa-Francorchamps",
+      "raceName": "Belgian Grand Prix",
+      "round": 13,
+      "totalLaps": 44
+    },
+    {
+      "country": "Hungary",
+      "date": "2025-08-03",
+      "hasTelemetry": true,
+      "location": "Budapest",
+      "raceName": "Hungarian Grand Prix",
+      "round": 14,
+      "totalLaps": 70
+    },
+    {
+      "country": "Netherlands",
+      "date": "2025-08-31",
+      "hasTelemetry": true,
+      "location": "Zandvoort",
+      "raceName": "Dutch Grand Prix",
+      "round": 15,
+      "totalLaps": 72
+    },
+    {
+      "country": "Italy",
+      "date": "2025-09-07",
+      "hasTelemetry": true,
+      "location": "Monza",
+      "raceName": "Italian Grand Prix",
+      "round": 16,
+      "totalLaps": 53
+    },
+    {
+      "country": "Azerbaijan",
+      "date": "2025-09-21",
+      "hasTelemetry": true,
+      "location": "Baku",
+      "raceName": "Azerbaijan Grand Prix",
+      "round": 17,
+      "totalLaps": 51
+    },
+    {
+      "country": "Singapore",
+      "date": "2025-10-05",
+      "hasTelemetry": true,
+      "location": "Marina Bay",
+      "raceName": "Singapore Grand Prix",
+      "round": 18,
+      "totalLaps": 62
+    },
+    {
+      "country": "United States",
+      "date": "2025-10-19",
+      "hasTelemetry": true,
+      "location": "Austin",
+      "raceName": "United States Grand Prix",
+      "round": 19,
+      "totalLaps": 56
+    },
+    {
+      "country": "Mexico",
+      "date": "2025-10-26",
+      "hasTelemetry": true,
+      "location": "Mexico City",
+      "raceName": "Mexico City Grand Prix",
+      "round": 20,
+      "totalLaps": 71
+    },
+    {
+      "country": "Brazil",
+      "date": "2025-11-09",
+      "hasTelemetry": true,
+      "location": "S\u00e3o Paulo",
+      "raceName": "S\u00e3o Paulo Grand Prix",
+      "round": 21,
+      "totalLaps": 71
+    },
+    {
+      "country": "United States",
+      "date": "2025-11-22",
+      "hasTelemetry": true,
+      "location": "Las Vegas",
+      "raceName": "Las Vegas Grand Prix",
+      "round": 22,
+      "totalLaps": 50
+    },
+    {
+      "country": "Qatar",
+      "date": "2025-11-30",
+      "hasTelemetry": true,
+      "location": "Lusail",
+      "raceName": "Qatar Grand Prix",
+      "round": 23,
+      "totalLaps": 57
+    },
+    {
+      "country": "United Arab Emirates",
+      "date": "2025-12-07",
+      "hasTelemetry": true,
+      "location": "Yas Island",
+      "raceName": "Abu Dhabi Grand Prix",
+      "round": 24,
+      "totalLaps": 58
+    }
+  ],
+  "season": 2025
+}
