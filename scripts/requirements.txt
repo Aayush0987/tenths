@@ -1,0 +1,3 @@
+# FastF1 pulls session timing and telemetry from the F1 live timing API.
+# It is only needed to regenerate data/; the Next app never runs Python.
+fastf1==3.4.4
