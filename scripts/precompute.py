@@ -28,7 +28,7 @@ import json
 import sys
 import time
 import traceback
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -46,14 +46,47 @@ def log(msg: str) -> None:
     print(msg, flush=True)
 
 
-def load_race(season: int, round_no: int):
+def load_race(season: int, round_no: int, attempts: int = 3):
+    """
+    Load a race session, retrying transient failures.
+
+    A long backfill hammers the timing API and some loads simply fail. Left
+    alone those look exactly like a race that has not run, which is how a
+    whole season quietly produced one file instead of twenty-four.
+    """
     import fastf1
 
-    # Race telemetry is not loaded: the traces and the dominance map are built
-    # from qualifying instead. See below.
-    race = fastf1.get_session(season, round_no, "R")
-    race.load(telemetry=False, weather=True, messages=True)
-    return race
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            # Race telemetry is not loaded: traces and dominance come from
+            # qualifying instead. See precompute_round.
+            race = fastf1.get_session(season, round_no, "R")
+            race.load(telemetry=False, weather=True, messages=True)
+            _ = race.laps  # force the failure here, where it can be retried
+            return race
+        except Exception as err:
+            last_error = err
+            if attempt < attempts:
+                wait = 5 * attempt
+                log(f"    load attempt {attempt} failed ({type(err).__name__}), retrying in {wait}s")
+                time.sleep(wait)
+    raise RuntimeError(f"could not load after {attempts} attempts: {last_error}")
+
+
+def has_run(season: int, round_no: int) -> bool:
+    """Whether the race is far enough in the past that data should exist."""
+    import fastf1
+
+    try:
+        schedule = fastf1.get_event_schedule(season, include_testing=False)
+        row = schedule[schedule["RoundNumber"] == round_no]
+        if row.empty:
+            return True
+        date = row.iloc[0]["EventDate"]
+        return bool(date < datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1))
+    except Exception:
+        return True
 
 
 def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[dict, dict | None] | None:
@@ -61,13 +94,8 @@ def precompute_round(season: int, round_no: int, want_telemetry: bool) -> tuple[
 
     race = load_race(season, round_no)
 
-    # A race that has not run — including one taking place today — loads
-    # without error but raises on .laps, so this cannot be an emptiness check.
-    try:
-        laps = race.laps
-    except fastf1.core.DataNotLoadedError:
-        log(f"    no lap data yet (session not run)")
-        return None
+    # load_race already forced .laps, so reaching here means it is present.
+    laps = race.laps
     if laps is None or laps.empty:
         log(f"    no lap data")
         return None
@@ -197,6 +225,7 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
             result = precompute_round(season, round_no, want_telemetry)
             if result is None:
                 continue
+
             race_payload, tel_payload = result
             size = write_gz(out, race_payload)
             note = f"{size/1024:.0f} KB"
@@ -206,6 +235,11 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
             log(f"    wrote {note} in {time.time()-started:.0f}s")
             written += 1
         except Exception as err:
+            # A race in the future legitimately has no data; one in the past
+            # that will not load is a failure worth seeing and retrying.
+            if not has_run(season, round_no):
+                log("    not run yet, skipping")
+                continue
             log(f"    FAILED: {err}")
             traceback.print_exc()
             failed += 1
