@@ -178,6 +178,12 @@ export interface TelemetryData {
 
 export interface SeasonIndex {
   season: number;
+  /**
+   * Rounds on the calendar, which is not the number that have run. Null when
+   * the schedule could not be read. The two differing is what makes a season
+   * "in progress" rather than finished.
+   */
+  scheduledRounds: number | null;
   races: {
     round: number;
     raceName: string;

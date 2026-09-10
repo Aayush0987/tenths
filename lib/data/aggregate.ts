@@ -5,6 +5,8 @@ import { cache } from "react";
 import type { RaceData } from "@/types/data";
 import { getRace, getSeasonIndex } from "@/lib/data/read";
 
+export { getSeasonIndex };
+
 /** Seasons in the repository, newest first. */
 export const SEASONS = [2026, 2025, 2024] as const;
 

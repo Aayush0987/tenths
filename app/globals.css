@@ -89,6 +89,8 @@
   --space-5: 24px;
   --space-6: 32px;
   --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
 
   /* Corners stay nearly square; rounded cards read as marketing. */
   --radius-sm: 2px;
@@ -99,8 +101,16 @@
   --text-small: 11px;
   --text-body: 13px;
   --text-lead: 15px;
+  --text-intro: 16px;
   --text-title: 20px;
-  --text-display: 28px;
+  --text-display: 30px;
+
+  /* The two sizes that only appear where a page is meant to have presence
+     rather than density — a landing wordmark and a headline figure. Both
+     scale with the viewport: at 13px body text a fixed 88px heading is
+     absurd on a phone and timid on a 27" display. Tables never use these. */
+  --text-hero: clamp(52px, 8.5vw, 112px);
+  --text-figure: clamp(26px, 3.1vw, 42px);
 
   --tracking-wide: 0.06em;
   --tracking-wider: 0.12em;
@@ -227,6 +237,155 @@ body {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+/* ---------------------------------------------------------------------------
+   Header
+
+   The bar is a single non-wrapping row, so on a phone the nav would otherwise
+   push the theme toggle off-screen and take the whole page sideways with it.
+   The links scroll within their own strip instead, and the date range — which
+   repeats what the page already says — is dropped below that width.
+   --------------------------------------------------------------------------- */
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.header-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.header-nav > * {
+  flex: none;
+}
+
+.header-range {
+  display: none;
+}
+
+@media (min-width: 720px) {
+  .header-range { display: inline; }
+}
+
+/* ---------------------------------------------------------------------------
+   Home grids
+
+   Explicit breakpoints rather than repeat(auto-fit, minmax(...)). A percentage
+   floor inside minmax() resolves against an indefinite size while the track is
+   being sized and is then ignored, so `minmax(min(100%, 420px), 1fr)` still
+   forced a 420px column on a 360px screen and pushed the page sideways. Every
+   track here is minmax(0, 1fr) — without the 0 a grid item's automatic minimum
+   is its min-content width, which is the other half of the same bug.
+   --------------------------------------------------------------------------- */
+.grid-masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: end;
+}
+
+.grid-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* An odd number of figures leaves a hole in the last row of a two- or
+   three-column grid; the final one spans the gap instead. */
+.grid-stats > :last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.grid-2up,
+.grid-3up {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  .grid-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-stats > :last-child:nth-child(odd) { grid-column: auto; }
+  .grid-3up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 900px) {
+  .grid-masthead {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+  .grid-2up { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1080px) {
+  .grid-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .grid-stats > :last-child:nth-child(odd) { grid-column: auto; }
+}
+
+/* ---------------------------------------------------------------------------
+   Interaction
+
+   The UI is monochrome so the data can carry meaning, which leaves nothing to
+   signal that a block is clickable. These do it with a border and a lift
+   instead of colour, and both respect a reduced-motion preference.
+   --------------------------------------------------------------------------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-faint);
+  transition: border-color 140ms ease, background-color 140ms ease,
+    transform 140ms ease;
+}
+
+a.card,
+.card-interactive {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+a.card:hover,
+.card-interactive:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-raised);
+  transform: translateY(-1px);
+}
+
+a.card:active,
+.card-interactive:active {
+  transform: translateY(0);
+}
+
+/* A row in a list that behaves like a link. */
+.row-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color 120ms ease;
+}
+
+.row-link:hover {
+  background: var(--surface-hover);
+}
+
+/* The accent hairline that marks the active item in a set. */
+.rule-accent {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .row-link,
+  a.card:hover,
+  .card-interactive:hover {
+    transition: none;
+    transform: none;
+  }
 }
 
 .skip-link {

@@ -247,9 +247,19 @@ def write_index(season: int) -> None:
                 "hasTelemetry": (season_dir / f"{d.get('round')}.tel.json.gz").exists(),
             })
     races.sort(key=lambda r: r["round"] or 0)
+
+    # How many rounds the calendar holds, which is not how many have run. The
+    # difference is what separates a finished championship from a leader, and
+    # the files on disk cannot tell them apart on their own.
+    scheduled = None
+    try:
+        scheduled = len(extract.fetch_circuit_index(season)) or None
+    except Exception as err:
+        log(f"  {season}: could not read the schedule ({err}); index omits the round count")
+
     season_dir.mkdir(parents=True, exist_ok=True)
     (season_dir / "index.json").write_text(
-        json.dumps({"season": season, "races": races,
+        json.dumps({"season": season, "races": races, "scheduledRounds": scheduled,
                     "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds")},
                    indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

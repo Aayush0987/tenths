@@ -20,7 +20,7 @@ export default function Header() {
     >
       <Link
         href="/"
-        className="num"
+        className="num shrink-0"
         style={{
           fontWeight: 700,
           letterSpacing: "0.14em",
@@ -32,7 +32,7 @@ export default function Header() {
         TENTHS
       </Link>
 
-      <nav className="flex items-center gap-4" aria-label="Main">
+      <nav className="header-nav" aria-label="Main">
         {[
           { href: "/2026", label: "2026" },
           { href: "/2025", label: "2025" },
@@ -46,8 +46,8 @@ export default function Header() {
         ))}
       </nav>
 
-      <div className="ml-auto flex items-center gap-3">
-        <span className="label" style={{ color: "var(--ink-faint)" }}>
+      <div className="ml-auto flex shrink-0 items-center gap-3">
+        <span className="label header-range" style={{ color: "var(--ink-faint)" }}>
           2024–2026
         </span>
         <ThemeToggle />
