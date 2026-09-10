@@ -1,26 +1,241 @@
 @import "tailwindcss";
 
+/* ===========================================================================
+   Tokens
+
+   Dark is the designed default, not an alternative: this is an instrument
+   panel and it is meant to be read in a dark room. A light theme exists and
+   is stepped for a pale ground rather than flipped, and an explicit choice
+   beats the OS in both directions.
+
+     :root                      dark, the default
+     prefers-color-scheme:light light, unless the user chose dark
+     [data-theme="light|dark"]  explicit choice, wins over the OS
+   =========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --bg: #0b0d10;
+  --surface: #12151a;
+  --surface-raised: #191d24;
+  --surface-sunken: rgba(232, 235, 240, 0.035);
+  --surface-hover: rgba(232, 235, 240, 0.055);
+
+  /* Lines */
+  --border-faint: rgba(232, 235, 240, 0.07);
+  --border: rgba(232, 235, 240, 0.12);
+  --border-strong: rgba(232, 235, 240, 0.22);
+
+  /* Text */
+  --ink: #e8ebf0;
+  --ink-muted: #99a1ad;
+  --ink-faint: #616a76;
+
+  /* One signal colour. The UI is otherwise monochrome so the data can carry
+     every other meaning; anything coloured that is not data is interactive. */
+  --accent: #38bdf8;
+  --on-accent: #04141d;
+
+  --scrim: rgba(0, 0, 0, 0.72);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.7);
+
+  /* --- Data palettes ------------------------------------------------------
+     Carried from prior work and kept because they were validated rather than
+     chosen. See docs/PLAN.md for the measurements. */
+
+  /* Tyre compounds: Formula 1's official colours. They pass both
+     discrimination checks (ΔE 17.7 under deuteranopia, 18.2 normal). Hard is
+     near-white, which is correct on this dark ground and is stepped down for
+     the light theme below. */
+  --compound-soft: #da291c;
+  --compound-medium: #ffd12e;
+  --compound-hard: #f0f0ec;
+  --compound-intermediate: #43b02a;
+  --compound-wet: #0067ad;
+  --compound-unknown: #8a8a85;
+
+  /* Sectors are ordered, so an ordinal ramp: one hue, light to dark. On a
+     dark ground the darkest step must still clear 2:1. */
+  --sector-1: #9ec5f4;
+  --sector-2: #5598e7;
+  --sector-3: #184f95;
+
+  /* Two-measure charts take categorical slots 1 and 2. */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --chart-accent: #5598e7;
+
+  /* Status is fixed and never themed. Reserved for state, never identity. */
+  --status-caution: #fab219;
+  --status-caution-soft: rgba(250, 178, 25, 0.5);
+  --status-caution-ink: #2a2416;
+  --status-critical: #d03b3b;
+  --status-good: #0ca30c;
+
+  /* --- Scale --------------------------------------------------------------
+     Tight by intent. This is a dense readout, not an article. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  /* Corners stay nearly square; rounded cards read as marketing. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+
+  --text-micro: 9px;
+  --text-caption: 10px;
+  --text-small: 11px;
+  --text-body: 13px;
+  --text-lead: 15px;
+  --text-title: 20px;
+  --text-display: 28px;
+
+  --tracking-wide: 0.06em;
+  --tracking-wider: 0.12em;
+}
+
+/* Light: stepped for a pale ground, not inverted. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #fbfbfc;
+    --surface: #ffffff;
+    --surface-raised: #ffffff;
+    --surface-sunken: rgba(11, 13, 16, 0.03);
+    --surface-hover: rgba(11, 13, 16, 0.05);
+    --border-faint: rgba(11, 13, 16, 0.07);
+    --border: rgba(11, 13, 16, 0.13);
+    --border-strong: rgba(11, 13, 16, 0.22);
+    --ink: #0f1318;
+    --ink-muted: #5a626d;
+    --ink-faint: #8a929d;
+    --accent: #0369a1;
+    --on-accent: #ffffff;
+    --scrim: rgba(11, 13, 16, 0.6);
+    --shadow-md: 0 4px 20px rgba(11, 13, 16, 0.1);
+    --shadow-lg: 0 12px 40px rgba(11, 13, 16, 0.18);
+    /* #F0F0EC hard is 1.11:1 against a pale ground — hard stints drew as
+       blank gaps. #BEBEB4 still reads as the white tyre at 1.82:1. */
+    --compound-hard: #bebeb4;
+    --sector-1: #86b6ef;
+    --sector-2: #3987e5;
+    --sector-3: #1c5cab;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --chart-accent: #3987e5;
+  }
+}
+
+[data-theme="light"] {
+  --bg: #fbfbfc;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: rgba(11, 13, 16, 0.03);
+  --surface-hover: rgba(11, 13, 16, 0.05);
+  --border-faint: rgba(11, 13, 16, 0.07);
+  --border: rgba(11, 13, 16, 0.13);
+  --border-strong: rgba(11, 13, 16, 0.22);
+  --ink: #0f1318;
+  --ink-muted: #5a626d;
+  --ink-faint: #8a929d;
+  --accent: #0369a1;
+  --on-accent: #ffffff;
+  --scrim: rgba(11, 13, 16, 0.6);
+  --shadow-md: 0 4px 20px rgba(11, 13, 16, 0.1);
+  --shadow-lg: 0 12px 40px rgba(11, 13, 16, 0.18);
+  --compound-hard: #bebeb4;
+  --sector-1: #86b6ef;
+  --sector-2: #3987e5;
+  --sector-3: #1c5cab;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --chart-accent: #3987e5;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-border: var(--border);
+  --color-border-faint: var(--border-faint);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ===========================================================================
+   Base
+   =========================================================================== */
+
+html {
+  color-scheme: dark;
 }
 
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { color-scheme: light; }
+}
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"] { color-scheme: dark; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-size: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Every figure in this app lines up in a column somewhere. */
+.num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Small caps label, the only piece of chrome that repeats. */
+.label {
+  font-size: var(--text-micro);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+/* Tailwind's preflight removes the focus ring and nothing replaces it. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: var(--text-small);
+  font-weight: 700;
+}
+.skip-link:focus { left: var(--space-2); top: var(--space-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
