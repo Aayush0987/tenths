@@ -1,11 +1,17 @@
 import Link from "next/link";
 import ThemeToggle from "@/components/shell/ThemeToggle";
+import CommandPalette from "@/components/shell/CommandPalette";
+import { getSearchIndex } from "@/lib/data/searchIndex";
 
 /**
  * One thin bar. Everything else on a page is data, so the chrome stays out of
  * the way: no logo lockup, no hero, no colour that is not interactive.
  */
-export default function Header() {
+export default async function Header() {
+  // Built at build time and handed to the palette whole, so search is instant
+  // and needs no request. See lib/data/searchIndex.ts.
+  const index = await getSearchIndex();
+
   return (
     <header
       className="flex items-center gap-5 px-4"
@@ -39,6 +45,7 @@ export default function Header() {
           { href: "/2024", label: "2024" },
           { href: "/drivers", label: "DRIVERS" },
           { href: "/circuits", label: "CIRCUITS" },
+          { href: "/records", label: "RECORDS" },
         ].map(({ href, label }) => (
           <Link key={href} href={href} className="label" style={{ textDecoration: "none" }}>
             {label}
@@ -47,9 +54,7 @@ export default function Header() {
       </nav>
 
       <div className="ml-auto flex shrink-0 items-center gap-3">
-        <span className="label header-range" style={{ color: "var(--ink-faint)" }}>
-          2024–2026
-        </span>
+        <CommandPalette index={index} />
         <ThemeToggle />
       </div>
     </header>

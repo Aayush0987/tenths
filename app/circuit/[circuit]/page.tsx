@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import CircuitHistoryChart, { type CircuitYear } from "@/components/charts/CircuitHistoryChart";
 import CircuitMap from "@/components/charts/CircuitMap";
+import EraCompare from "@/components/circuit/EraCompare";
+import { compareLaps } from "@/lib/analysis/lapCompare";
 import CircuitFacts from "@/components/circuit/CircuitFacts";
 import CircuitRecords from "@/components/circuit/CircuitRecords";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -39,16 +41,39 @@ export default async function CircuitPage({
   let geometry = null;
   let character = null;
   let mapSeason: number | null = null;
-  for (const race of [...races].reverse()) {
+
+  // Every running that published telemetry, oldest first, so the newest can
+  // draw the map and the outermost pair can be compared against each other.
+  const withTelemetry: { season: number; telemetry: NonNullable<Awaited<ReturnType<typeof getTelemetry>>> }[] = [];
+  for (const race of races) {
     const telemetry = await getTelemetry(race.season, race.round);
-    if (!telemetry) continue;
-    const g = circuitGeometry(telemetry);
+    if (telemetry) withTelemetry.push({ season: race.season, telemetry });
+  }
+
+  for (const entry of [...withTelemetry].reverse()) {
+    const g = circuitGeometry(entry.telemetry);
     if (!g) continue;
     geometry = g;
-    character = circuitCharacter(telemetry, g);
-    mapSeason = race.season;
+    character = circuitCharacter(entry.telemetry, g);
+    mapSeason = entry.season;
     break;
   }
+
+  // The furthest apart two seasons on file, which is the widest comparison the
+  // data supports.
+  const first = withTelemetry[0];
+  const last = withTelemetry[withTelemetry.length - 1];
+  const traceOf = (t: typeof first) =>
+    t.telemetry.traces.find((x) => x.driver === t.telemetry.reference) ?? t.telemetry.traces[0];
+
+  const eras =
+    first && last && first.season !== last.season && traceOf(first) && traceOf(last)
+      ? {
+          comparison: compareLaps(traceOf(first)!, traceOf(last)!, first.telemetry.miniSectors),
+          earlier: { season: first.season, driver: traceOf(first)!.driver },
+          later: { season: last.season, driver: traceOf(last)!.driver },
+        }
+      : null;
 
   const records = circuitRecords(races);
   const leaders = circuitPointsLeaders(races);
@@ -144,6 +169,15 @@ export default async function CircuitPage({
 
           <CircuitFacts character={character} raceLaps={latest.totalLaps} />
         </section>
+      )}
+
+      {eras && (
+        <EraCompare
+          comparison={eras.comparison}
+          location={latest.location}
+          earlier={eras.earlier}
+          later={eras.later}
+        />
       )}
 
       <CircuitRecords records={records} leaders={leaders} seasons={years.map((y) => y.season)} />
