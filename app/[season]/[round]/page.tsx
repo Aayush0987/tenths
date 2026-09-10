@@ -74,6 +74,11 @@ export default async function RacePage({
         <Link href={`/${seasonNo}`} className="label" style={{ textDecoration: "none" }}>
           ← {seasonNo}
         </Link>
+        {telemetry && (
+          <Link href={`/${seasonNo}/${round}/lap`} className="label" style={{ textDecoration: "none", color: "var(--accent)" }}>
+            LAP EXPLORER →
+          </Link>
+        )}
         <span className="ml-auto flex items-center gap-2">
           {prev && <Link href={`/${seasonNo}/${prev}`} className="label" style={{ textDecoration: "none" }}>← R{prev}</Link>}
           <span className="label num" style={{ color: "var(--accent)" }}>R{race.round}</span>

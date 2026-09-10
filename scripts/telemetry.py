@@ -15,8 +15,11 @@ import pandas as pd
 from encoding import rounded
 from extract import MINI_SECTORS, TELEMETRY_POINTS
 
-CHANNELS = ["X", "Y", "Distance", "Speed", "Throttle", "Brake"]
-SCHEMA = ["x", "y", "distance", "speed", "throttle", "brake"]
+# `Time` on a lap's telemetry is lap-relative — it runs 0 to the lap time —
+# which is what a delta chart needs. Integrating 1/speed over distance instead
+# would accumulate error across a couple of hundred downsampled points.
+CHANNELS = ["X", "Y", "Distance", "Speed", "Throttle", "Brake", "Time"]
+SCHEMA = ["x", "y", "distance", "speed", "throttle", "brake", "t"]
 
 
 def _downsample(frame: pd.DataFrame, points: int) -> pd.DataFrame:
@@ -64,7 +67,8 @@ def build_telemetry(session, log=print):
             str(driver),
             seconds,
             [[rounded(r.X, 1), rounded(r.Y, 1), rounded(r.Distance, 1),
-              rounded(r.Speed, 1), rounded(r.Throttle, 0), rounded(r.Brake, 0)]
+              rounded(r.Speed, 1), rounded(r.Throttle, 0), rounded(r.Brake, 0),
+              rounded(r.Time.total_seconds(), 3)]
              for r in ds.itertuples()],
         ])
 

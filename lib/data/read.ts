@@ -137,7 +137,7 @@ export const getTelemetry = cache(async function getTelemetry(
   if (!raw) return null;
 
   const traceFields = raw.schema?.traces ?? [];
-  const expected = ["x", "y", "distance", "speed", "throttle", "brake"];
+  const expected = ["x", "y", "distance", "speed", "throttle", "brake", "t"];
   if (traceFields.join(",") !== expected.join(",")) {
     console.warn(`[data] telemetry trace schema mismatch in ${season}/${r}`);
     return null;
@@ -159,6 +159,7 @@ export const getTelemetry = cache(async function getTelemetry(
       points: ((t[2] as unknown[][]) ?? []).map((p) => ({
         x: at(p, "x"), y: at(p, "y"), distance: at(p, "distance"),
         speed: at(p, "speed"), throttle: at(p, "throttle"), brake: at(p, "brake"),
+        t: at(p, "t"),
       })),
     })),
   };

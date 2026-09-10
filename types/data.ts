@@ -108,6 +108,9 @@ export interface TelemetryPoint {
   speed: number | null;
   throttle: number | null;
   brake: number | null;
+  /** Seconds since the start of the lap. Lap-relative, so two drivers'
+   *  traces can be differenced directly. */
+  t: number | null;
 }
 
 export interface DriverTrace {
