@@ -1,0 +1,227 @@
+{
+  "generatedAt": "2026-09-12T16:53:43+00:00",
+  "races": [
+    {
+      "circuitId": "bahrain",
+      "country": "Bahrain",
+      "date": "2022-03-20",
+      "hasTelemetry": true,
+      "location": "Sakhir",
+      "raceName": "Bahrain Grand Prix",
+      "round": 1,
+      "totalLaps": 57
+    },
+    {
+      "circuitId": "jeddah",
+      "country": "Saudi Arabia",
+      "date": "2022-03-27",
+      "hasTelemetry": true,
+      "location": "Jeddah",
+      "raceName": "Saudi Arabian Grand Prix",
+      "round": 2,
+      "totalLaps": 50
+    },
+    {
+      "circuitId": "albert_park",
+      "country": "Australia",
+      "date": "2022-04-10",
+      "hasTelemetry": true,
+      "location": "Melbourne",
+      "raceName": "Australian Grand Prix",
+      "round": 3,
+      "totalLaps": 58
+    },
+    {
+      "circuitId": "imola",
+      "country": "Italy",
+      "date": "2022-04-24",
+      "hasTelemetry": true,
+      "location": "Imola",
+      "raceName": "Emilia Romagna Grand Prix",
+      "round": 4,
+      "totalLaps": 63
+    },
+    {
+      "circuitId": "miami",
+      "country": "United States",
+      "date": "2022-05-08",
+      "hasTelemetry": true,
+      "location": "Miami",
+      "raceName": "Miami Grand Prix",
+      "round": 5,
+      "totalLaps": 57
+    },
+    {
+      "circuitId": "catalunya",
+      "country": "Spain",
+      "date": "2022-05-22",
+      "hasTelemetry": true,
+      "location": "Barcelona",
+      "raceName": "Spanish Grand Prix",
+      "round": 6,
+      "totalLaps": 66
+    },
+    {
+      "circuitId": "monaco",
+      "country": "Monaco",
+      "date": "2022-05-29",
+      "hasTelemetry": true,
+      "location": "Monaco",
+      "raceName": "Monaco Grand Prix",
+      "round": 7,
+      "totalLaps": 64
+    },
+    {
+      "circuitId": "baku",
+      "country": "Azerbaijan",
+      "date": "2022-06-12",
+      "hasTelemetry": true,
+      "location": "Baku",
+      "raceName": "Azerbaijan Grand Prix",
+      "round": 8,
+      "totalLaps": 51
+    },
+    {
+      "circuitId": "villeneuve",
+      "country": "Canada",
+      "date": "2022-06-19",
+      "hasTelemetry": true,
+      "location": "Montr\u00e9al",
+      "raceName": "Canadian Grand Prix",
+      "round": 9,
+      "totalLaps": 70
+    },
+    {
+      "circuitId": "silverstone",
+      "country": "Great Britain",
+      "date": "2022-07-03",
+      "hasTelemetry": true,
+      "location": "Silverstone",
+      "raceName": "British Grand Prix",
+      "round": 10,
+      "totalLaps": 52
+    },
+    {
+      "circuitId": "red_bull_ring",
+      "country": "Austria",
+      "date": "2022-07-10",
+      "hasTelemetry": true,
+      "location": "Spielberg",
+      "raceName": "Austrian Grand Prix",
+      "round": 11,
+      "totalLaps": 71
+    },
+    {
+      "circuitId": "ricard",
+      "country": "France",
+      "date": "2022-07-24",
+      "hasTelemetry": true,
+      "location": "Le Castellet",
+      "raceName": "French Grand Prix",
+      "round": 12,
+      "totalLaps": 53
+    },
+    {
+      "circuitId": "hungaroring",
+      "country": "Hungary",
+      "date": "2022-07-31",
+      "hasTelemetry": true,
+      "location": "Budapest",
+      "raceName": "Hungarian Grand Prix",
+      "round": 13,
+      "totalLaps": 70
+    },
+    {
+      "circuitId": "spa",
+      "country": "Belgium",
+      "date": "2022-08-28",
+      "hasTelemetry": true,
+      "location": "Spa-Francorchamps",
+      "raceName": "Belgian Grand Prix",
+      "round": 14,
+      "totalLaps": 44
+    },
+    {
+      "circuitId": "zandvoort",
+      "country": "Netherlands",
+      "date": "2022-09-04",
+      "hasTelemetry": true,
+      "location": "Zandvoort",
+      "raceName": "Dutch Grand Prix",
+      "round": 15,
+      "totalLaps": 72
+    },
+    {
+      "circuitId": "monza",
+      "country": "Italy",
+      "date": "2022-09-11",
+      "hasTelemetry": true,
+      "location": "Monza",
+      "raceName": "Italian Grand Prix",
+      "round": 16,
+      "totalLaps": 53
+    },
+    {
+      "circuitId": "marina_bay",
+      "country": "Singapore",
+      "date": "2022-10-02",
+      "hasTelemetry": true,
+      "location": "Marina Bay",
+      "raceName": "Singapore Grand Prix",
+      "round": 17,
+      "totalLaps": 59
+    },
+    {
+      "circuitId": "suzuka",
+      "country": "Japan",
+      "date": "2022-10-09",
+      "hasTelemetry": true,
+      "location": "Suzuka",
+      "raceName": "Japanese Grand Prix",
+      "round": 18,
+      "totalLaps": 29
+    },
+    {
+      "circuitId": "americas",
+      "country": "United States",
+      "date": "2022-10-23",
+      "hasTelemetry": true,
+      "location": "Austin",
+      "raceName": "United States Grand Prix",
+      "round": 19,
+      "totalLaps": 56
+    },
+    {
+      "circuitId": "rodriguez",
+      "country": "Mexico",
+      "date": "2022-10-30",
+      "hasTelemetry": true,
+      "location": "Mexico City",
+      "raceName": "Mexico City Grand Prix",
+      "round": 20,
+      "totalLaps": 71
+    },
+    {
+      "circuitId": "interlagos",
+      "country": "Brazil",
+      "date": "2022-11-13",
+      "hasTelemetry": true,
+      "location": "S\u00e3o Paulo",
+      "raceName": "S\u00e3o Paulo Grand Prix",
+      "round": 21,
+      "totalLaps": 71
+    },
+    {
+      "circuitId": "yas_marina",
+      "country": "Abu Dhabi",
+      "date": "2022-11-20",
+      "hasTelemetry": true,
+      "location": "Yas Island",
+      "raceName": "Abu Dhabi Grand Prix",
+      "round": 22,
+      "totalLaps": 58
+    }
+  ],
+  "scheduledRounds": 22,
+  "season": 2022
+}

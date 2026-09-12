@@ -45,6 +45,10 @@ CACHE = ROOT / ".fastf1-cache"
 # heaviest thing that will ever hit it from here.
 PAUSE_SECONDS = 2
 
+# How many races may fail in a row before this process gives up and lets a
+# fresh one take over. See the note where it is used.
+STOP_AFTER_FAILURES = 3
+
 
 def log(msg: str) -> None:
     print(msg, flush=True)
@@ -297,15 +301,22 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
             skipped += 1
             continue
 
-        # Consecutive failures mean the API is refusing, not that these
-        # particular races are broken — a whole season failed round by round
-        # once, each one burning three retries, until the schedule endpoint
-        # started refusing too. Backing off properly costs a few minutes and
-        # saves the run.
-        if consecutive_failures >= 3:
-            wait = min(600, 60 * consecutive_failures)
-            log(f"    {consecutive_failures} failures in a row; waiting {wait}s for the API")
-            time.sleep(wait)
+        # Consecutive failures are a sick process, not a refusing API.
+        #
+        # A long run loads reliably for a dozen or so races and then fails on
+        # everything after that — while a brand new process loads the very
+        # round that just failed three times, immediately. Whatever degrades
+        # (FastF1 holds large frames and a SQLite-backed request session across
+        # loads) does not recover by waiting: an earlier version backed off for
+        # three, four, then five minutes and never wrote another file.
+        #
+        # So give up and let the caller start a fresh one. Nothing is lost —
+        # rounds already on disk are skipped, so the next process resumes where
+        # this one stopped. scripts/backfill.sh does exactly that in a loop.
+        if consecutive_failures >= STOP_AFTER_FAILURES:
+            log(f"    {consecutive_failures} failures in a row — stopping this process so a "
+                f"fresh one can carry on (run scripts/backfill.sh to do that automatically)")
+            break
 
         started = time.time()
         log(f"  {season} R{round_no}")
