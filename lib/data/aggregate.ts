@@ -1,5 +1,7 @@
 import "server-only";
 
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 import { cache } from "react";
 
 import type { RaceData } from "@/types/data";
@@ -7,8 +9,26 @@ import { getRace, getSeasonIndex } from "@/lib/data/read";
 
 export { getSeasonIndex };
 
-/** Seasons in the repository, newest first. */
-export const SEASONS = [2026, 2025, 2024] as const;
+const DATA_DIR = path.join(process.cwd(), "data");
+
+/**
+ * Seasons in the repository, newest first.
+ *
+ * Read from the directory rather than listed here. A hardcoded list is one
+ * more thing to remember on the day a backfill lands, and forgetting it fails
+ * silently — the data would be on disk and simply absent from every page.
+ */
+export const getSeasons = cache(async function getSeasons(): Promise<number[]> {
+  try {
+    const entries = await readdir(DATA_DIR, { withFileTypes: true });
+    return entries
+      .filter((e) => e.isDirectory() && /^\d{4}$/.test(e.name))
+      .map((e) => Number(e.name))
+      .sort((a, b) => b - a);
+  } catch {
+    return [];
+  }
+});
 
 /**
  * Every race in a season, decoded.
@@ -36,7 +56,8 @@ export const getSeasonRaces = cache(async function getSeasonRaces(
 
 /** Every race across every season. Used by the driver and circuit pages. */
 export const getAllRaces = cache(async function getAllRaces(): Promise<RaceData[]> {
-  const perSeason = await Promise.all(SEASONS.map((s) => getSeasonRaces(s)));
+  const seasons = await getSeasons();
+  const perSeason = await Promise.all(seasons.map((s) => getSeasonRaces(s)));
   return perSeason.flat();
 });
 

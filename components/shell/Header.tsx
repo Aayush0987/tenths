@@ -2,6 +2,7 @@ import Link from "next/link";
 import ThemeToggle from "@/components/shell/ThemeToggle";
 import CommandPalette from "@/components/shell/CommandPalette";
 import { getSearchIndex } from "@/lib/data/searchIndex";
+import { getSeasons } from "@/lib/data/aggregate";
 
 /**
  * One thin bar. Everything else on a page is data, so the chrome stays out of
@@ -11,6 +12,11 @@ export default async function Header() {
   // Built at build time and handed to the palette whole, so search is instant
   // and needs no request. See lib/data/searchIndex.ts.
   const index = await getSearchIndex();
+
+  // Only the most recent few seasons go in the bar. With nine on file the
+  // whole list would not fit, and the palette reaches any of them in three
+  // keystrokes; the home page carries the full set.
+  const seasons = (await getSeasons()).slice(0, 3);
 
   return (
     <header
@@ -40,9 +46,7 @@ export default async function Header() {
 
       <nav className="header-nav" aria-label="Main">
         {[
-          { href: "/2026", label: "2026" },
-          { href: "/2025", label: "2025" },
-          { href: "/2024", label: "2024" },
+          ...seasons.map((season) => ({ href: `/${season}`, label: String(season) })),
           { href: "/drivers", label: "DRIVERS" },
           { href: "/circuits", label: "CIRCUITS" },
           { href: "/records", label: "RECORDS" },

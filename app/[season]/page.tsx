@@ -5,11 +5,12 @@ import ChampionshipChart from "@/components/charts/ChampionshipChart";
 import ResultsGrid from "@/components/charts/ResultsGrid";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { buildStandings } from "@/lib/analysis/championship";
-import { SEASONS, getSeasonRaces } from "@/lib/data/aggregate";
+import { getSeasonRaces, getSeasons } from "@/lib/data/aggregate";
 import { getSeasonIndex } from "@/lib/data/read";
 
-export function generateStaticParams() {
-  return SEASONS.map((season) => ({ season: String(season) }));
+export async function generateStaticParams() {
+  const seasons = await getSeasons();
+  return seasons.map((season) => ({ season: String(season) }));
 }
 
 export default async function SeasonPage({

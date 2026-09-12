@@ -2,15 +2,16 @@ import Link from "next/link";
 
 import SectionHeading from "@/components/ui/SectionHeading";
 import { buildStandings } from "@/lib/analysis/championship";
-import { SEASONS, getDrivers, getSeasonRaces } from "@/lib/data/aggregate";
+import { getDrivers, getSeasonRaces, getSeasons } from "@/lib/data/aggregate";
 
 export default async function DriversPage() {
   const drivers = await getDrivers();
+  const seasons = await getSeasons();
 
   // Career totals across the seasons held, computed once here rather than per
   // driver page, so the list can be ranked by something meaningful.
   const totals = new Map<string, { points: number; wins: number; podiums: number; starts: number }>();
-  for (const season of SEASONS) {
+  for (const season of seasons) {
     const standings = buildStandings(await getSeasonRaces(season));
     for (const row of standings.drivers) {
       const t = totals.get(row.code) ?? { points: 0, wins: 0, podiums: 0, starts: 0 };
@@ -33,7 +34,7 @@ export default async function DriversPage() {
       <SectionHeading
         label="DRIVERS"
         title={`${drivers.length} drivers`}
-        note={`Everyone who started a race in ${[...SEASONS].reverse().join(", ")}. Totals cover only those seasons, not a full career. Points include sprints.`}
+        note={`Everyone who started a race between ${seasons[seasons.length - 1]} and ${seasons[0]}. Totals cover only those seasons, not a full career. Points include sprints.`}
       />
 
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-small)",

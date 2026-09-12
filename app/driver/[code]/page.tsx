@@ -6,7 +6,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import {
   buildStandings, racePoints, teammateComparisons,
 } from "@/lib/analysis/championship";
-import { SEASONS, getAllRaces, getDrivers, getSeasonRaces } from "@/lib/data/aggregate";
+import { getAllRaces, getDrivers, getSeasonRaces, getSeasons } from "@/lib/data/aggregate";
 import { FALLBACK_TEAM_COLOR } from "@/lib/charts/palette";
 
 export async function generateStaticParams() {
@@ -46,7 +46,7 @@ export default async function DriverPage({
   // Championship position per season has to come from that season's full
   // standings, not from this driver's races alone.
   const seasonLines: SeasonLine[] = [];
-  for (const season of [...SEASONS].sort((a, b) => a - b)) {
+  for (const season of [...(await getSeasons())].sort((a, b) => a - b)) {
     const races = await getSeasonRaces(season);
     if (races.length === 0) continue;
     const standings = buildStandings(races);
