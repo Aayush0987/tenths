@@ -41,6 +41,10 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
 CACHE = ROOT / ".fastf1-cache"
 
+# A breath between races. The timing API is not ours and a backfill is the
+# heaviest thing that will ever hit it from here.
+PAUSE_SECONDS = 2
+
 
 def log(msg: str) -> None:
     print(msg, flush=True)
@@ -271,17 +275,38 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
 
     season_dir = DATA / str(season)
     if rounds is None:
-        schedule = fastf1.get_event_schedule(season, include_testing=False)
+        # A backfill is long enough that the timing API will refuse something
+        # eventually. Losing one season's schedule used to raise straight out
+        # of main and abandon every remaining season — several hours of work
+        # thrown away over one request. It skips the season instead.
+        try:
+            schedule = fastf1.get_event_schedule(season, include_testing=False)
+        except Exception as err:
+            log(f"  {season}: could not load the schedule ({err}); skipping the season")
+            return 0, 0, 1
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         rounds = [int(r) for r in schedule[schedule["EventDate"] < now]["RoundNumber"].tolist()]
         log(f"  {season}: {len(rounds)} completed round(s)")
 
     written = skipped = failed = 0
+    consecutive_failures = 0
+
     for round_no in rounds:
         out = season_dir / f"{round_no}.json.gz"
         if out.exists() and not force:
             skipped += 1
             continue
+
+        # Consecutive failures mean the API is refusing, not that these
+        # particular races are broken — a whole season failed round by round
+        # once, each one burning three retries, until the schedule endpoint
+        # started refusing too. Backing off properly costs a few minutes and
+        # saves the run.
+        if consecutive_failures >= 3:
+            wait = min(600, 60 * consecutive_failures)
+            log(f"    {consecutive_failures} failures in a row; waiting {wait}s for the API")
+            time.sleep(wait)
+
         started = time.time()
         log(f"  {season} R{round_no}")
         try:
@@ -297,6 +322,8 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
                 note += f" + {tsize/1024:.0f} KB telemetry"
             log(f"    wrote {note} in {time.time()-started:.0f}s")
             written += 1
+            consecutive_failures = 0
+            time.sleep(PAUSE_SECONDS)
         except Exception as err:
             # A race in the future legitimately has no data; one in the past
             # that will not load is a failure worth seeing and retrying.
@@ -306,6 +333,7 @@ def run_season(season: int, rounds: list[int] | None, force: bool, want_telemetr
             log(f"    FAILED: {err}")
             traceback.print_exc()
             failed += 1
+            consecutive_failures += 1
     write_index(season)
     return written, skipped, failed
 

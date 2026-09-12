@@ -1,0 +1,107 @@
+name: Update race data
+
+# Races finish on Sunday. The timing API settles within a few hours but the
+# classification can take longer to appear, so this runs Monday and again on
+# Wednesday: the second run picks up anything the first was too early for, and
+# costs nothing when there is nothing new.
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+    - cron: "0 9 * * 3"
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "Season to update (defaults to the current year)"
+        required: false
+      force:
+        description: "Regenerate rounds that already exist"
+        type: boolean
+        default: false
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Fetch new rounds
+    runs-on: ubuntu-latest
+    # A cold cache and a fresh race is a couple of minutes; the ceiling is here
+    # so a hanging upstream request cannot run for six hours.
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Install the pipeline
+        run: pip install -r scripts/requirements.txt
+
+      # Keyed by season so a week's run starts from last week's downloads
+      # rather than re-fetching the whole year. The date suffix rotates the
+      # key so it is written back each run; restore-keys picks up the most
+      # recent one.
+      - name: Restore the FastF1 cache
+        uses: actions/cache@v4
+        with:
+          path: .fastf1-cache
+          key: fastf1-${{ inputs.season || 'current' }}-${{ github.run_id }}
+          restore-keys: |
+            fastf1-${{ inputs.season || 'current' }}-
+
+      - name: Work out the season
+        id: season
+        run: echo "value=${{ inputs.season || '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch any rounds that have run
+        run: |
+          SEASON="${{ steps.season.outputs.value }}"
+          if [ -z "$SEASON" ]; then SEASON=$(date -u +%Y); fi
+          echo "Updating $SEASON"
+          # precompute skips rounds already on disk and only considers rounds
+          # whose date has passed, so this is naturally incremental.
+          python scripts/precompute.py --season "$SEASON" ${{ inputs.force && '--force' || '' }}
+
+      # The pipeline reports its own failures but writes what it can. This is
+      # the gate: a file that does not read, or is missing a table the app
+      # requires, must not reach the site.
+      - name: Verify every data file
+        run: python scripts/verify.py
+
+      - name: Commit anything new
+        id: commit
+        run: |
+          # status, not diff: a brand new round is an untracked file and
+          # `git diff` does not report those, so a first-time round would have
+          # been reported as nothing to do.
+          if [ -z "$(git status --porcelain -- data)" ]; then
+            echo "No new rounds."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git config user.name "tenths-bot"
+          git config user.email "tenths-bot@users.noreply.github.com"
+          git add data
+          SUMMARY=$(git diff --cached --name-only -- data \
+            | grep -E 'data/[0-9]{4}/[0-9]+\.json\.gz$' \
+            | sed -E 's#data/([0-9]{4})/([0-9]+)\.json\.gz#\1 R\2#' \
+            | paste -sd ", " -)
+          git commit -m "Add ${SUMMARY:-updated race data}"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.commit.outputs.changed }}" = "true" ]; then
+            echo "Committed new data; the deploy follows from the push." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Nothing new to add." >> "$GITHUB_STEP_SUMMARY"
+          fi
