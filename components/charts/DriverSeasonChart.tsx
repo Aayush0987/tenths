@@ -8,7 +8,26 @@ import {
 import ChartFrame from "@/components/charts/ChartFrame";
 import DataTable from "@/components/charts/DataTable";
 import { CHART_INK, SERIES_COLORS } from "@/lib/charts/palette";
-import type { RaceData } from "@/types/data";
+
+/**
+ * One round, reduced to what this chart draws.
+ *
+ * The page used to hand over the RaceData for every round a driver contested.
+ * That is every lap of every car, serialised into the payload twice — for a
+ * driver with nine seasons behind them it came to 24 MB, over the limit a
+ * prerendered response is allowed to be, and the deploy refused it. The chart
+ * needs six fields per race.
+ */
+export interface DriverRound {
+  season: number;
+  round: number;
+  name: string;
+  /** Grid slot, or null for a pit lane start, which is not a slot. */
+  grid: number | null;
+  pitStart: boolean;
+  finish: number | null;
+  status: string | null;
+}
 
 /**
  * Where a driver started against where they finished, round by round.
@@ -23,30 +42,24 @@ import type { RaceData } from "@/types/data";
  * off.
  */
 export default function DriverSeasonChart({
-  races,
+  rounds,
   code,
   color,
 }: {
-  races: RaceData[];
+  rounds: DriverRound[];
   code: string;
   color: string;
 }) {
-  const data = races.map((race) => {
-    const result = race.results.find((r) => r.driver === code);
-    const grid = result?.grid ?? null;
-    return {
-      key: `${race.season}.${String(race.round).padStart(2, "0")}`,
-      season: race.season,
-      round: race.round,
-      name: race.raceName.replace(" Grand Prix", ""),
-      // Grid 0 is a pit lane start, which is not position zero at the top of
-      // the chart. Plotted as null and called out in the tooltip instead.
-      grid: grid === 0 ? null : grid,
-      pitStart: grid === 0,
-      finish: result?.position ?? null,
-      status: result?.position === null ? (result?.status ?? "DNF") : null,
-    };
-  });
+  const data = rounds.map((r) => ({
+    key: `${r.season}.${String(r.round).padStart(2, "0")}`,
+    season: r.season,
+    round: r.round,
+    name: r.name,
+    grid: r.grid,
+    pitStart: r.pitStart,
+    finish: r.finish,
+    status: r.status,
+  }));
 
   // A rule between seasons, so a three-year run does not read as one long one.
   const boundaries = data

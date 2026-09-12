@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import DriverSeasonChart from "@/components/charts/DriverSeasonChart";
+import DriverSeasonChart, { type DriverRound } from "@/components/charts/DriverSeasonChart";
 import SectionHeading from "@/components/ui/SectionHeading";
 import {
   buildStandings, racePoints, teammateComparisons,
@@ -60,6 +60,24 @@ export default async function DriverPage({
     });
   }
 
+  // Reduced here rather than handed over whole. The chart is a client
+  // component, so whatever it receives is serialised into the page; passing
+  // the full RaceData for every round a long-serving driver contested came to
+  // 24 MB and was refused at deploy.
+  const rounds: DriverRound[] = mine.map((race) => {
+    const result = race.results.find((r) => r.driver === code);
+    const grid = result?.grid ?? null;
+    return {
+      season: race.season,
+      round: race.round,
+      name: race.raceName.replace(" Grand Prix", ""),
+      grid: grid === 0 ? null : grid,
+      pitStart: grid === 0,
+      finish: result?.position ?? null,
+      status: result?.position === null ? (result?.status ?? "DNF") : null,
+    };
+  });
+
   const teammates = teammateComparisons(mine, code);
   const totals = seasonLines.reduce(
     (acc, s) => ({
@@ -114,7 +132,7 @@ export default async function DriverPage({
         ))}
       </dl>
 
-      <DriverSeasonChart races={mine} code={code} color={color} />
+      <DriverSeasonChart rounds={rounds} code={code} color={color} />
 
       <section className="mb-6" style={{ border: "1px solid var(--border-faint)", background: "var(--surface)" }}>
         <div className="px-3 pt-3">
