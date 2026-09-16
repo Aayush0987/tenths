@@ -61,6 +61,10 @@ jobs:
         id: season
         run: echo "value=${{ inputs.season || '' }}" >> "$GITHUB_OUTPUT"
 
+      - name: TEMP debug - probe livetiming API from this runner
+        run: |
+          curl -sv -o /dev/null "https://livetiming.formula1.com/static/2026/2026-09-13_Spanish_Grand_Prix/2026-09-13_Race/SessionInfo.jsonStream" 2>&1 | tail -40 || true
+
       - name: Fetch any rounds that have run
         run: |
           SEASON="${{ steps.season.outputs.value }}"
