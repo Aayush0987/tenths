@@ -1,7 +1,8 @@
 {
-  "generatedAt": "2026-09-10T18:37:58+00:00",
+  "generatedAt": "2026-09-17T05:25:04+00:00",
   "races": [
     {
+      "circuitId": "albert_park",
       "country": "Australia",
       "date": "2026-03-08",
       "hasTelemetry": false,
@@ -11,6 +12,7 @@
       "totalLaps": 58
     },
     {
+      "circuitId": "shanghai",
       "country": "China",
       "date": "2026-03-15",
       "hasTelemetry": false,
@@ -20,6 +22,7 @@
       "totalLaps": 56
     },
     {
+      "circuitId": "suzuka",
       "country": "Japan",
       "date": "2026-03-29",
       "hasTelemetry": false,
@@ -29,6 +32,7 @@
       "totalLaps": 53
     },
     {
+      "circuitId": "miami",
       "country": "United States",
       "date": "2026-05-03",
       "hasTelemetry": false,
@@ -38,6 +42,7 @@
       "totalLaps": 57
     },
     {
+      "circuitId": "villeneuve",
       "country": "Canada",
       "date": "2026-05-24",
       "hasTelemetry": false,
@@ -47,6 +52,7 @@
       "totalLaps": 68
     },
     {
+      "circuitId": "monaco",
       "country": "Monaco",
       "date": "2026-06-07",
       "hasTelemetry": false,
@@ -56,6 +62,7 @@
       "totalLaps": 78
     },
     {
+      "circuitId": "catalunya",
       "country": "Spain",
       "date": "2026-06-14",
       "hasTelemetry": false,
@@ -65,6 +72,7 @@
       "totalLaps": 66
     },
     {
+      "circuitId": "red_bull_ring",
       "country": "Austria",
       "date": "2026-06-28",
       "hasTelemetry": false,
@@ -74,6 +82,7 @@
       "totalLaps": 71
     },
     {
+      "circuitId": "silverstone",
       "country": "United Kingdom",
       "date": "2026-07-05",
       "hasTelemetry": false,
@@ -83,6 +92,7 @@
       "totalLaps": 52
     },
     {
+      "circuitId": "spa",
       "country": "Belgium",
       "date": "2026-07-19",
       "hasTelemetry": false,
@@ -92,6 +102,7 @@
       "totalLaps": 44
     },
     {
+      "circuitId": "hungaroring",
       "country": "Hungary",
       "date": "2026-07-26",
       "hasTelemetry": false,
@@ -101,6 +112,7 @@
       "totalLaps": 70
     },
     {
+      "circuitId": "zandvoort",
       "country": "Netherlands",
       "date": "2026-08-23",
       "hasTelemetry": false,
@@ -110,6 +122,7 @@
       "totalLaps": 72
     },
     {
+      "circuitId": "monza",
       "country": "Italy",
       "date": "2026-09-06",
       "hasTelemetry": false,
@@ -117,6 +130,16 @@
       "raceName": "Italian Grand Prix",
       "round": 13,
       "totalLaps": 53
+    },
+    {
+      "circuitId": "madring",
+      "country": "Spain",
+      "date": "2026-09-13",
+      "hasTelemetry": false,
+      "location": "Madrid",
+      "raceName": "Spanish Grand Prix",
+      "round": 14,
+      "totalLaps": 57
     }
   ],
   "scheduledRounds": 23,
