@@ -60,13 +60,22 @@ jobs:
         run: echo "value=${{ inputs.season || '' }}" >> "$GITHUB_OUTPUT"
 
       - name: Fetch any rounds that have run
+        id: fetch
         run: |
           SEASON="${{ steps.season.outputs.value }}"
           if [ -z "$SEASON" ]; then SEASON=$(date -u +%Y); fi
+          echo "season=$SEASON" >> "$GITHUB_OUTPUT"
           echo "Updating $SEASON"
           # precompute skips rounds already on disk and only considers rounds
           # whose date has passed, so this is naturally incremental.
           python scripts/precompute.py --season "$SEASON" ${{ inputs.force && '--force' || '' }}
+
+      # A round fetched right after it happens can beat the results feed that
+      # circuitId comes from (Jolpica/Ergast), so precompute_round leaves it
+      # blank rather than fail the round. It has usually caught up by the
+      # time this step runs a few seconds later; harmless no-op otherwise.
+      - name: Backfill circuit identity
+        run: python scripts/backfill_circuits.py --season "${{ steps.fetch.outputs.season }}"
 
       # The pipeline reports its own failures but writes what it can. This is
       # the gate: a file that does not read, or is missing a table the app
