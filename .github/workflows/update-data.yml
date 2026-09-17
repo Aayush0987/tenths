@@ -37,6 +37,12 @@ jobs:
     # A cold cache and a fresh race is a couple of minutes; the ceiling is here
     # so a hanging upstream request cannot run for six hours.
     timeout-minutes: 45
+    # actions/setup-python assumes the hosted macOS image's layout (it tries
+    # to write its tool cache under /Users/runner, which does not exist
+    # here) and fails outright on a self-hosted runner. This machine already
+    # has Python 3.13, so PATH just needs to find it.
+    env:
+      PATH: /opt/anaconda3/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
 
     steps:
       # clean: false — .fastf1-cache is gitignored, and the default clean
@@ -45,12 +51,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           clean: false
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-          cache: pip
-          cache-dependency-path: scripts/requirements.txt
 
       - name: Install the pipeline
         run: pip install -r scripts/requirements.txt
