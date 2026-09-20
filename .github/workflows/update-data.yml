@@ -1,13 +1,11 @@
 name: Update race data
 
-# Races finish on Sunday. The timing API settles within a few hours but the
-# classification can take longer to appear, so this runs Monday and again on
-# Wednesday: the second run picks up anything the first was too early for, and
-# costs nothing when there is nothing new.
+# Not scheduled here: the runner is a home machine that is not always on, and
+# a GitHub cron job queued while it is off is dropped after 24 hours. Instead a
+# launchd job on that machine (scripts/install-launchd.sh) checks the F1
+# calendar at login and every few hours, and dispatches this workflow only when
+# a round has run without its data being on disk.
 on:
-  schedule:
-    - cron: "0 9 * * 1"
-    - cron: "0 9 * * 3"
   workflow_dispatch:
     inputs:
       season:
